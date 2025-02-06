@@ -12,6 +12,7 @@ export const getAllProduct = async (url) => {
 
 export const deleteProduct = async (id) => {
   try {
+    const product = await getProductById(101);
     const response = await axios.delete(`/api/products/${id}`, {
       headers: {
         Authorization: `Bearer ${secureLocalStorage.getItem("acessToken")}`,
@@ -51,7 +52,7 @@ export const updateProduct = async (id, data) => {
     throw new Error(errorData.error ? errorData.error : error.message);
   }
 };
-
+// API PRODUCTS DETAIL
 export const getProductById = async (id) => {
   try {
     const response = await axios.get(`/api/products/${id}`, {
