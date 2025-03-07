@@ -12,23 +12,24 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
         await RefreshToken();
 
-        // Update access token di originalRequest
-        originalRequest.headers[
-          "Authorization"
-        ] = `Bearer ${secureLocalStorage.getItem("acessToken")}`;
+        // Update access token in originalRequest
+        originalRequest.headers["Authorization"] = `Bearer ${secureLocalStorage.getItem("accessToken")}`;
 
-        // Retry request yang sebelumnya error
+        // Retry the request that previously failed
         return api(originalRequest);
-      } catch (error) {
-        // Tangani error refresh token
-        console.error("Error refreshing token:", error);
-        throw error;
+      } catch (refreshError) {
+        // Handle refresh token error
+        console.error("Error refreshing token:", refreshError);
+        throw refreshError;
       }
+    } else if (!error.response) {
+      // Handle network or other unknown errors
+      console.error("Network or unknown error:", error);
     }
     throw error;
   }
