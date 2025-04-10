@@ -7,6 +7,21 @@ const api = axios.create({
   timeout: import.meta.env.VITE_API_TIMEOUT,
 });
 
+// Request interceptor to attach Authorization header
+api.interceptors.request.use(
+  (config) => {
+    const token = secureLocalStorage.getItem("accessToken");
+    if (token) {
+      config.headers["Authorization"] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    console.error("Error in request interceptor:", error);
+    return Promise.reject(error);
+  }
+);
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
