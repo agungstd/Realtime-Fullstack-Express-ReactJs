@@ -7,30 +7,41 @@ import EditProduct from "../components/EditProduct.jsx";
 import { Route, Routes } from "react-router";
 import { BrowserRouter } from "react-router-dom";
 
-const RoutePage = () => {
+const RoutePage = async () => {
   const key = import.meta.env.VITE_API_KEY;
+
   const getJWT = async () => {
-    const response = await axios.get("/api/users/" + key);
-    secureLocalStorage.setItem("acessToken", response.data.acessToken);
-    secureLocalStorage.setItem("refreshToken", response.data.refreshToken);
-    secureLocalStorage.setItem("user", response.data.data);
+    try {
+      const response = await axios.get("/api/users/" + key);
+      secureLocalStorage.setItem("accessToken", response.data.accessToken); // Fixed typo
+      secureLocalStorage.setItem("refreshToken", response.data.refreshToken);
+      secureLocalStorage.setItem("user", response.data.data);
+    } catch (error) {
+      console.error("Error fetching JWT:", error.message);
+    }
   };
+
   let refreshExpires = new Date();
   const refreshToken = secureLocalStorage.getItem("refreshToken");
+
   if (refreshToken) {
     try {
       refreshExpires = new Date(jwtDecode(refreshToken).exp * 1000);
     } catch (error) {
-      getJWT();
+      console.warn("Failed to decode refresh token, fetching new JWT:", error.message);
+      await getJWT();
     }
   } else {
-    getJWT();
-  }
-  if (refreshExpires <= new Date()) {
-    getJWT();
+    console.info("No refresh token found, fetching new JWT");
+    await getJWT();
   }
 
-  // declare route
+  if (refreshExpires <= new Date()) {
+    console.info("Refresh token expired, fetching new JWT");
+    await getJWT();
+  }
+
+  // Declare routes
   const navItems = [
     { path: "/", element: <Home /> },
     { path: "/add", element: <AddProduct /> },
@@ -38,11 +49,9 @@ const RoutePage = () => {
   ];
 
   const buildNav = () => {
-    return navItems.map((navItem, index) => {
-      return (
-        <Route key={index} path={navItem.path} element={navItem.element} />
-      );
-    });
+    return navItems.map((navItem, index) => (
+      <Route key={index} path={navItem.path} element={navItem.element} />
+    ));
   };
 
   return (
