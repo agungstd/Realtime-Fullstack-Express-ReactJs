@@ -18,17 +18,17 @@ const RefreshToken = async () => {
     const expirationTime = new Date(decodedToken.exp * 1000);
     const currentTime = new Date();
     const timeBuffer = 60 * 1000; // 1 minute buffer before expiration
-    
+
     console.log("Token expiration check:", {
       expirationTime: expirationTime.toISOString(),
       currentTime: currentTime.toISOString(),
-      isExpired: expirationTime <= currentTime
+      isExpired: expirationTime <= currentTime,
     });
-    
+
     // Refresh if token is expired or will expire soon
     if (expirationTime <= new Date(currentTime.getTime() + timeBuffer)) {
       console.log("Token expired or expiring soon, refreshing...");
-      
+
       const response = await axios.get("/api/refresh", {
         headers: {
           Authorization: `Bearer ${refreshToken}`,
@@ -41,10 +41,10 @@ const RefreshToken = async () => {
       }
 
       // Fix typo in "accessToken" throughout the app
-      secureLocalStorage.setItem("acessToken", response.data.acessToken); // Keep as is for backward compatibility
+      secureLocalStorage.setItem("accessToken", response.data.accessToken); // Updated typo
       secureLocalStorage.setItem("refreshToken", response.data.refreshToken);
       secureLocalStorage.setItem("user", response.data.data);
-      
+
       console.log("Token refreshed successfully");
       return true;
     } else {
